@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  web:
+    build: .
+    command:  bash -c "python /usr/src/tt_bs/manage.py migrate --noinput &&
+      python /usr/src/tt_bs/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/usr/src/tt_bs
+    ports:
+      - 8000:8000
