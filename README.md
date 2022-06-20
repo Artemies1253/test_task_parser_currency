@@ -7,5 +7,3 @@
 Название всех валют находиться в классе src.parsers.emums.ValueInvestingComEnum , необходимо использовать эти названия что бы обращаться к API(из консоли по второму уровню и к полноценному бекенду с 3 уровня)
 
 Что бы добавить новую валюту для парсинга нужно в файл src.parsers.emums.ValueInvestingComEnum забить имя и найти значение symbol на сайте (https://ru.investing.com/charts/cryptocurrency-charts) для этого нужно нажать F12, найти запрос history? из этого запроса параметр symbol переносим в src.parsers.emums.ValueInvestingComEnum.
-
-good_luck_have_fan))
