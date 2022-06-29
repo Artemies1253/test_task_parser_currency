@@ -1,7 +1,8 @@
 import sqlite3
 import argparse
+from pprint import pprint
 
-from context_manager import open_cursor
+from services import open_cursor_sqlite3
 
 
 def convert_date_by_sql(date_from, date_to):
@@ -27,7 +28,7 @@ def minmax(kind_currency, date_from, date_to):
     else:
         return False
 
-    with open_cursor() as cursor:
+    with open_cursor_sqlite3() as cursor:
         sql = f"SELECT MAX(quotation.high_value), MIN(quotation.low_value) " \
               f"FROM parsers_quotation as quotation " \
               f"WHERE quotation.date >= '%s' AND quotation.date <= '%s' AND " \
@@ -50,7 +51,7 @@ def currency_list(kind_currency, date_from, date_to, limit=None):
     else:
         return False
 
-    with open_cursor() as cursor:
+    with open_cursor_sqlite3() as cursor:
         sql = "SELECT quotation.close_value " \
               "FROM parsers_quotation as quotation " \
               "WHERE quotation.date >= '%s' and quotation.date <= '%s' and " \
@@ -72,12 +73,22 @@ def currency_list(kind_currency, date_from, date_to, limit=None):
                 print(f"{i+1}. {round(value[0], 2)}")
 
 
+def money_name_list():
+    """Выводит имена валют из бд"""
+    with open_cursor_sqlite3() as cursor:
+        sql = "SELECT money.name FROM parsers_money as money"
+        response = cursor.execute(sql)
+        values = response.fetchall()
+        for i, name in enumerate(values):
+            print(f"{i+1}. {name}")
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('func', type=str, help="Название функции")
-    parser.add_argument('currency', type=str, help="Название валюты, по дефолту USD_RUB", default="USD_RUB")
-    parser.add_argument('date_from', type=str, help="Дата от которой нужно вывести информацию")
-    parser.add_argument('date_to', type=str, help="Дата до которой нужно вывести информацию")
+    parser.add_argument('--currency', type=str, required=False, help="Название валюты, по дефолту USD_RUB", default="USD_RUB")
+    parser.add_argument('--date_from', type=str, required=False, help="Дата от которой нужно вывести информацию")
+    parser.add_argument('--date_to', type=str, required=False, help="Дата до которой нужно вывести информацию")
     parser.add_argument(
         '--limit', type=int, required=False, help="Количество записей для вывода при использовании функции list_currency")
     arguments = parser.parse_args()
@@ -87,3 +98,6 @@ if __name__ == '__main__':
 
     if arguments.func == "currency_list":
         currency_list(arguments.currency, arguments.date_from, arguments.date_to, arguments.limit)
+
+    if arguments.func == "money_name_list":
+        money_name_list()

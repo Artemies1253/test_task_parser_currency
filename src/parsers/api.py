@@ -1,13 +1,9 @@
-from unittest import result
-
 from rest_framework import generics
 from rest_framework.response import Response
-from rest_framework.pagination import LimitOffsetPagination
 from django.db.models import Max, Min
 
-from src.parsers.serializers import MinMaxQuotationSerializer, DetailQuotationSerializer
-from src.parsers.models import Quotation
-
+from src.parsers.serializers import MinMaxQuotationSerializer, DetailQuotationSerializer, DetailMoneySerializer
+from src.parsers.models import Quotation, Money
 
 
 class QuotationMinMaxAPIView(generics.GenericAPIView):
@@ -54,3 +50,8 @@ class ListQuotationAPIView(generics.GenericAPIView):
                 date__gt=serializer.validated_data.get("date_from"),
             ).select_related("money")
             return queryset
+
+
+class ListMoneyAPIView(generics.ListAPIView):
+    serializer_class = DetailMoneySerializer
+    queryset = Money.objects.all()

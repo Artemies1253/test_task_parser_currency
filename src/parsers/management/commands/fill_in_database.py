@@ -1,8 +1,7 @@
-from datetime import datetime
-from pprint import pprint
+from datetime import datetime, timedelta
+import pytz
 
 from django.core.management.base import BaseCommand
-import pytz
 
 from src.parsers.investing_com import Parser
 from src.parsers.enums import ValueInvestingComEnum, PeriodInvestingComEnum
@@ -10,11 +9,11 @@ from src.parsers.models import Money, Quotation
 
 
 class Command(BaseCommand):
-    """Заполняет базу данных от 1 января 2022 года до текущей даты с сайта investing_com, переод заполнения 1 час"""
+    """Заполняет базу данных за последний полгода c сайта investing_com, период заполнения 1 час"""
 
     def handle(self, *args, **kwargs):
-        date_from = datetime(2022, 1, 1)
         date_to = datetime.utcnow()
+        date_from = date_to - timedelta(weeks=1*4*6)
         moneys = ValueInvestingComEnum
 
         for money in moneys:
@@ -28,9 +27,11 @@ class Command(BaseCommand):
             result = parser.run()
             count_quotation = 0
             for quotation in result:
+
                 quotation_model = Quotation.objects.get_or_create(
                     money=money_model[0],
                     **quotation
                 )
-                count_quotation += 1
+                if quotation_model[1]:
+                    count_quotation += 1
             print(f"У валюты {money.name} записано {count_quotation} котировок")

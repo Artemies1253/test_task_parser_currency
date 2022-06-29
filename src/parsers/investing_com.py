@@ -1,10 +1,9 @@
 from datetime import datetime
-from pprint import pprint
 
 import requests
 
 from src.parsers.enums import PeriodInvestingComEnum, ValueInvestingComEnum
-
+from services import utc_to_local
 
 class Parser:
     def __init__(
@@ -53,7 +52,7 @@ class Parser:
             self.date.append(
                 {
                     "close_value": close_value,
-                    "date": datetime.utcfromtimestamp(float(response.get("t")[i])),
+                    "date": utc_to_local(datetime.utcfromtimestamp(float(response.get("t")[i]))),
                     "open_value": response.get("o")[i],
                     "high_value": response.get("h")[i],
                     "low_value": response.get("l")[i]

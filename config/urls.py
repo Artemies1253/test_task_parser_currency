@@ -16,10 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from src.parsers.api import QuotationMinMaxAPIView, ListQuotationAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("minmax", QuotationMinMaxAPIView.as_view()),
-    path("list", ListQuotationAPIView.as_view()),
+    path("api/", include("src.urls")),
 ]
