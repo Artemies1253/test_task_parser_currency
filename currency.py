@@ -1,6 +1,4 @@
 import sqlite3
-from pprint import pprint
-import sys
 import argparse
 
 
@@ -32,8 +30,9 @@ def minmax(kind_currency, date_from, date_to):
     try:
         sql = f"SELECT MAX(quotation.high_value), MIN(quotation.low_value) " \
               f"FROM parsers_quotation as quotation " \
-              f"WHERE quotation.date >= '{date_from}' AND quotation.date <= '{date_to}' AND " \
-              f"money_id = (SELECT money.id FROM parsers_money as money WHERE money.name = '{kind_currency}')"
+              f"WHERE quotation.date >= '%s' AND quotation.date <= '%s' AND " \
+              f"money_id = (SELECT money.id FROM parsers_money as money WHERE money.name = '%s')" \
+              % (date_from, date_to, kind_currency)
         response = cursor.execute(sql)
         values = response.fetchall()
         max_currency, min_currency = values[0]
@@ -45,16 +44,10 @@ def minmax(kind_currency, date_from, date_to):
         cursor.close()
 
 
-def list(kind_currency, date_from, date_to, limit=None):
+def currency_list(kind_currency, date_from, date_to, limit=None):
     """Выводит количество и список значений закрытий свечей
     Дата должна передаваться в формате dd.mm.yyyy
     """
-    print("start")
-    print(date_from)
-    print(type(date_from))
-
-    print(date_to)
-    print(type(date_to))
     sql_date = convert_date_by_sql(date_from, date_to)
     if sql_date:
         date_from, date_to = sql_date
@@ -64,10 +57,11 @@ def list(kind_currency, date_from, date_to, limit=None):
     connect = sqlite3.connect("db.sqlite3")
     cursor = connect.cursor()
     try:
-        sql = f"SELECT quotation.close_value " \
-              f"FROM parsers_quotation as quotation " \
-              f"WHERE quotation.date >= '{date_from}' AND quotation.date <= '{date_to}' AND " \
-              f"money_id = (SELECT money.id FROM parsers_money as money WHERE money.name = '{kind_currency}')"
+        sql = "SELECT quotation.close_value " \
+              "FROM parsers_quotation as quotation " \
+              "WHERE quotation.date >= '%s' and quotation.date <= '%s' and " \
+              "money_id = (SELECT money.id FROM parsers_money as money WHERE money.name = '%s')" \
+              % (date_from, date_to, kind_currency)
         response = cursor.execute(sql)
         values = response.fetchall()
 
@@ -91,10 +85,16 @@ def list(kind_currency, date_from, date_to, limit=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('func', type=str)
-    parser.add_argument('currency', type=str)
-    parser.add_argument('date_from', type=str)
-    parser.add_argument('date_to', type=str)
-    parser.add_argument('--limit', type=int)
+    parser.add_argument('func', type=str, help="Название функции")
+    parser.add_argument('currency', type=str, help="Название валюты, по дефолту USD_RUB", default="USD_RUB")
+    parser.add_argument('date_from', type=str, help="Дата от которой нужно вывести информацию")
+    parser.add_argument('date_to', type=str, help="Дата до которой нужно вывести информацию")
+    parser.add_argument(
+        '--limit', type=int, required=False, help="Количество записей для вывода при использовании функции list_currency")
     arguments = parser.parse_args()
-    globals()[arguments.func](arguments.currency, arguments.date_from, arguments.date_to, arguments.limit)
+
+    if arguments.func == "minmax":
+        minmax(arguments.currency, arguments.date_from, arguments.date_to)
+
+    if arguments.func == "currency_list":
+        currency_list(arguments.currency, arguments.date_from, arguments.date_to, arguments.limit)
