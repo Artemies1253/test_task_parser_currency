@@ -1,6 +1,8 @@
 import sqlite3
 import argparse
 
+from context_manager import open_cursor
+
 
 def convert_date_by_sql(date_from, date_to):
     """Конвертирует дату, для того что бы её можно было использовать в SQL запросе
@@ -25,9 +27,7 @@ def minmax(kind_currency, date_from, date_to):
     else:
         return False
 
-    connect = sqlite3.connect("db.sqlite3")
-    cursor = connect.cursor()
-    try:
+    with open_cursor() as cursor:
         sql = f"SELECT MAX(quotation.high_value), MIN(quotation.low_value) " \
               f"FROM parsers_quotation as quotation " \
               f"WHERE quotation.date >= '%s' AND quotation.date <= '%s' AND " \
@@ -38,10 +38,6 @@ def minmax(kind_currency, date_from, date_to):
         max_currency, min_currency = values[0]
         print(f"MIN = {min_currency}")
         print(f"MAX = {max_currency}")
-    except Exception as ex:
-        print(ex)
-    finally:
-        cursor.close()
 
 
 def currency_list(kind_currency, date_from, date_to, limit=None):
@@ -54,9 +50,7 @@ def currency_list(kind_currency, date_from, date_to, limit=None):
     else:
         return False
 
-    connect = sqlite3.connect("db.sqlite3")
-    cursor = connect.cursor()
-    try:
+    with open_cursor() as cursor:
         sql = "SELECT quotation.close_value " \
               "FROM parsers_quotation as quotation " \
               "WHERE quotation.date >= '%s' and quotation.date <= '%s' and " \
@@ -76,11 +70,6 @@ def currency_list(kind_currency, date_from, date_to, limit=None):
             for i, value in enumerate(values):
                 pass
                 print(f"{i+1}. {round(value[0], 2)}")
-
-    except Exception as ex:
-        print(ex)
-    finally:
-        cursor.close()
 
 
 if __name__ == '__main__':
